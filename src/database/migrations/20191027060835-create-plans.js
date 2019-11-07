@@ -1,9 +1,9 @@
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('planos', {
+    return queryInterface.createTable('plans', {
       id: {
         type: Sequelize.INTEGER,
-        autoincrement: true,
+        autoIncrement: true,
         primaryKey: true,
         allowNull: false,
       },
@@ -12,11 +12,11 @@ module.exports = {
         allowNull: false,
       },
       duration: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
         allowNull: false,
       },
       price: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
         allowNull: false,
       },
       created_at: {
@@ -31,6 +31,6 @@ module.exports = {
   },
 
   down: queryInterface => {
-    return queryInterface.dropTable('planos');
+    return queryInterface.dropTable('plans');
   },
 };
