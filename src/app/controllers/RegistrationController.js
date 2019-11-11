@@ -8,7 +8,7 @@ import Registration from '../models/Registration';
 class RegistrationController {
   async index(req, res) {
     const list = await Registration.findAll({
-      attributes: ['id', 'price'],
+      attributes: ['id', 'price', 'created_at'],
       include: [
         {
           model: Student,
@@ -60,6 +60,50 @@ class RegistrationController {
     });
 
     return res.json(registration);
+  }
+
+  async update(req, res) {
+    const { plan } = req.body;
+    const regId = req.params.registration_id;
+
+    const reg = await Registration.findOne({
+      where: {
+        id: regId,
+      },
+    });
+
+    if (!reg) {
+      return res.status(404).json({ error: 'Invalid registration ID' });
+    }
+
+    const getPlan = await Plan.findByPk(plan);
+    const fullPrice = getPlan.price * getPlan.duration;
+
+    reg.update({
+      plan_id: plan,
+      price: fullPrice,
+      where: {
+        id: regId,
+      },
+    });
+
+    return res.json(reg);
+  }
+
+  async delete(req, res) {
+    const findReg = await Registration.findByPk(req.params.registration_id);
+
+    if (!findReg) {
+      return res.status(404).json({ error: 'Invalid registration ID' });
+    }
+
+    Registration.destroy({
+      where: {
+        id: req.params.registration_id,
+      },
+    });
+
+    return res.json(findReg);
   }
 }
 

@@ -4,8 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon src/server.js",
-    "startDebug": "nodemon --inspect src/server.js"
+    "dev": "nodemon src/server.js",
+    "devDebug": "nodemon --inspect src/server.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
