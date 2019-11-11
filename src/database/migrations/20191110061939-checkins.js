@@ -1,3 +1,4 @@
+// Jogar para mongoDB
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('checkins', {

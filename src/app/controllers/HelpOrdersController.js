@@ -14,12 +14,18 @@ class HelpOrdersController {
   async store(req, res) {
     const { question } = req.body;
 
-    const cadQuestion = await HelpOrders.create({
+    if (question === null || question === '') {
+      return res
+        .status(400)
+        .json({ error: 'The question input should be filled' });
+    }
+
+    const helpQuestion = await HelpOrders.create({
       student_id: req.params.student_id,
       question,
     });
 
-    return res.json(cadQuestion);
+    return res.json(helpQuestion);
   }
 }
 

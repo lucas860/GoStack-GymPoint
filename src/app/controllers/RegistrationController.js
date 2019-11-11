@@ -2,8 +2,9 @@ import { parseISO, addMonths, isBefore, endOfDay } from 'date-fns';
 
 import Student from '../models/Student';
 import Plan from '../models/Plan';
-
 import Registration from '../models/Registration';
+
+import Mail from '../../lib/mail';
 
 class RegistrationController {
   async index(req, res) {
@@ -59,6 +60,25 @@ class RegistrationController {
       price: totalPrice,
     });
 
+    await Mail.sendMail({
+      to: `${findStudent.name} <${findStudent.email}>`,
+      subject: 'Matrícula Gympoint',
+      text: `Obrigado por escolher a Gympoint!
+      Abaixo estão as informações da sua matrícula:
+      Nome: ${findStudent.name}
+      Nº da matrícula: ${registration.id}
+      Plano: ${getPlan.title},
+      Valor/Mensal: R$${getPlan.price},
+      Valor/Total: R$${registration.totalPrice},
+      Data de ínicio: ${start_date},
+      Data de término: ${registration.end_date},
+
+      Seja muito bem vindo!!!
+
+      Equipe Gympoint
+      `,
+    });
+
     return res.json(registration);
   }
 
@@ -82,9 +102,6 @@ class RegistrationController {
     reg.update({
       plan_id: plan,
       price: fullPrice,
-      where: {
-        id: regId,
-      },
     });
 
     return res.json(reg);

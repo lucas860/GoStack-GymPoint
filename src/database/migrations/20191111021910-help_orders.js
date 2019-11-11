@@ -1,3 +1,4 @@
+// Jogar para mongodb
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('help_orders', {
