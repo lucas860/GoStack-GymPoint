@@ -35,7 +35,11 @@ class AnswerOrdersController {
     await Mail.sendMail({
       to: `${studentOrder.name} <${studentOrder.email}>`,
       subject: 'Sua solicitação foi respondida',
-      text: `${answer}`,
+      template: 'answer',
+      context: {
+        student: studentOrder.name,
+        answer,
+      },
     });
 
     return res.json(studentOrder);

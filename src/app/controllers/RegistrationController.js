@@ -1,5 +1,5 @@
-import { parseISO, addMonths, isBefore, endOfDay } from 'date-fns';
-
+import { parseISO, addMonths, isBefore, endOfDay, format } from 'date-fns';
+import pt from 'date-fns/locale/pt';
 import Student from '../models/Student';
 import Plan from '../models/Plan';
 import Registration from '../models/Registration';
@@ -42,7 +42,7 @@ class RegistrationController {
       return res.status(400).json({ error: "The selected plan doesn't exist" });
     }
 
-    const { price, duration } = getPlan;
+    const { title, price, duration } = getPlan;
 
     const totalPrice = price * duration;
 
@@ -63,20 +63,34 @@ class RegistrationController {
     await Mail.sendMail({
       to: `${findStudent.name} <${findStudent.email}>`,
       subject: 'Matrícula Gympoint',
-      text: `Obrigado por escolher a Gympoint!
-      Abaixo estão as informações da sua matrícula:
-      Nome: ${findStudent.name}
-      Nº da matrícula: ${registration.id}
-      Plano: ${getPlan.title},
-      Valor/Mensal: R$${getPlan.price},
-      Valor/Total: R$${registration.totalPrice},
-      Data de ínicio: ${start_date},
-      Data de término: ${registration.end_date},
+      template: 'registration',
+      context: {
+        registration: registration.id,
+        student: findStudent.name,
+        plan: title,
+        value: price,
+        totalValue: totalPrice,
+        startDate: format(registration.start_date, "dd 'de' MMMM 'de' yyyy", {
+          locale: pt,
+        }),
+        endDate: format(registration.end_date, "dd 'de' MMMM 'de' yyyy", {
+          locale: pt,
+        }),
+      },
+      // text: `Obrigado por escolher a Gympoint!
+      // Abaixo estão as informações da sua matrícula:
+      // Nome: ${findStudent.name}
+      // Nº da matrícula: ${registration.id}
+      // Plano: ${getPlan.title},
+      // Valor/Mensal: R$${getPlan.price},
+      // Valor/Total: R$${registration.totalPrice},
+      // Data de ínicio: ${start_date},
+      // Data de término: ${registration.end_date},
 
-      Seja muito bem vindo!!!
+      // Seja muito bem vindo!!!
 
-      Equipe Gympoint
-      `,
+      // Equipe Gympoint
+      // `,
     });
 
     return res.json(registration);
