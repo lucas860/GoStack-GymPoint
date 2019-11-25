@@ -1,5 +1,7 @@
 import { parseISO, addMonths, isBefore, endOfDay, format } from 'date-fns';
 import pt from 'date-fns/locale/pt';
+import * as Yup from 'yup';
+
 import Student from '../models/Student';
 import Plan from '../models/Plan';
 import Registration from '../models/Registration';
@@ -9,7 +11,7 @@ import Mail from '../../lib/mail';
 class RegistrationController {
   async index(req, res) {
     const list = await Registration.findAll({
-      attributes: ['id', 'price', 'created_at'],
+      attributes: ['id', 'start_date', 'end_date', 'price', 'active'],
       include: [
         {
           model: Student,
@@ -28,6 +30,16 @@ class RegistrationController {
   }
 
   async store(req, res) {
+    const schema = Yup.object().shape({
+      student: Yup.number().required(),
+      plan: Yup.number().required(),
+      start_date: Yup.date().required(),
+    });
+
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Validation fails' });
+    }
+
     const { student, plan, start_date } = req.body;
 
     const findStudent = await Student.findByPk(student);
@@ -97,25 +109,38 @@ class RegistrationController {
   }
 
   async update(req, res) {
-    const { plan } = req.body;
+    const schema = Yup.object().shape({});
+
     const regId = req.params.registration_id;
 
     const reg = await Registration.findOne({
       where: {
         id: regId,
       },
+      attributes: [
+        'id',
+        'plan_id',
+        'start_date',
+        'end_date',
+        'price',
+        'active',
+      ],
+      include: [
+        {
+          model: Student,
+          as: 'student',
+          attributes: ['name'],
+        },
+        {
+          model: Plan,
+          as: 'plan',
+          attributes: ['title', 'duration', 'price'],
+        },
+      ],
     });
 
-    if (!reg) {
-      return res.status(404).json({ error: 'Invalid registration ID' });
-    }
-
-    const getPlan = await Plan.findByPk(plan);
-    const fullPrice = getPlan.price * getPlan.duration;
-
-    reg.update({
-      plan_id: plan,
-      price: fullPrice,
+    await reg.update(req.body, {
+      price: reg.plan.price * reg.plan.duration,
     });
 
     return res.json(reg);
