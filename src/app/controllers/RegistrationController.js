@@ -16,12 +16,12 @@ class RegistrationController {
         {
           model: Student,
           as: 'student',
-          attributes: ['name'],
+          attributes: ['id', 'name'],
         },
         {
           model: Plan,
           as: 'plan',
-          attributes: ['title', 'duration', 'price'],
+          attributes: ['id', 'title', 'duration', 'price'],
         },
       ],
     });
@@ -33,14 +33,14 @@ class RegistrationController {
     const schema = Yup.object().shape({
       student: Yup.number().required(),
       plan: Yup.number().required(),
-      start_date: Yup.date().required(),
+      date: Yup.date().required(),
     });
 
     if (!(await schema.isValid(req.body))) {
       return res.status(400).json({ error: 'Validation fails' });
     }
 
-    const { student, plan, start_date } = req.body;
+    const { student, plan, date } = req.body;
 
     const findStudent = await Student.findByPk(student);
 
@@ -58,16 +58,16 @@ class RegistrationController {
 
     const totalPrice = price * duration;
 
-    if (isBefore(parseISO(start_date), new Date())) {
+    if (isBefore(parseISO(date), new Date())) {
       return res.status(400).json({ error: 'Past dates are not permitted' });
     }
 
-    const endDate = addMonths(parseISO(start_date), duration);
+    const endDate = addMonths(parseISO(date), duration);
 
     const registration = await Registration.create({
       student_id: student,
       plan_id: plan,
-      start_date,
+      start_date: date,
       end_date: endOfDay(endDate),
       price: totalPrice,
     });
@@ -89,58 +89,34 @@ class RegistrationController {
           locale: pt,
         }),
       },
-      // text: `Obrigado por escolher a Gympoint!
-      // Abaixo estão as informações da sua matrícula:
-      // Nome: ${findStudent.name}
-      // Nº da matrícula: ${registration.id}
-      // Plano: ${getPlan.title},
-      // Valor/Mensal: R$${getPlan.price},
-      // Valor/Total: R$${registration.totalPrice},
-      // Data de ínicio: ${start_date},
-      // Data de término: ${registration.end_date},
-
-      // Seja muito bem vindo!!!
-
-      // Equipe Gympoint
-      // `,
     });
 
     return res.json(registration);
   }
 
   async update(req, res) {
-    const schema = Yup.object().shape({});
-
-    const regId = req.params.registration_id;
-
-    const reg = await Registration.findOne({
-      where: {
-        id: regId,
-      },
-      attributes: [
-        'id',
-        'plan_id',
-        'start_date',
-        'end_date',
-        'price',
-        'active',
-      ],
-      include: [
-        {
-          model: Student,
-          as: 'student',
-          attributes: ['name'],
-        },
-        {
-          model: Plan,
-          as: 'plan',
-          attributes: ['title', 'duration', 'price'],
-        },
-      ],
+    const schema = Yup.object().shape({
+      student: Yup.number().integer(),
+      plan: Yup.number().integer(),
+      date: Yup.date(),
     });
 
-    await reg.update(req.body, {
-      price: reg.plan.price * reg.plan.duration,
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json('Validation fails');
+    }
+
+    const { student, plan, date } = req.body;
+    const regId = req.params.registration_id;
+
+    const reg = await Registration.findByPk(regId);
+
+    const planPrice = await Plan.findByPk(plan);
+
+    await reg.update({
+      student_id: student,
+      plan_id: plan,
+      start_date: date,
+      price: planPrice.price * planPrice.duration,
     });
 
     return res.json(reg);

@@ -1,3 +1,5 @@
+import * as Yup from 'yup';
+
 import HelpOrders from '../models/HelpOrders';
 import Student from '../models/Student';
 
@@ -6,43 +8,56 @@ import Mail from '../../lib/mail';
 class AnswerOrdersController {
   async index(req, res) {
     const helpOrders = await HelpOrders.findAll({
+      attributes: ['id', 'question'],
       where: {
         answer: null,
       },
+      include: [
+        {
+          model: Student,
+          as: 'student',
+          attributes: ['name'],
+        },
+      ],
     });
 
     return res.json(helpOrders);
   }
 
   async store(req, res) {
+    const schema = Yup.object().shape({
+      answer: Yup.string().required(),
+    });
+
+    if (!(await schema.isValid(req.body))) {
+      return res
+        .status(400)
+        .json({ error: 'The question input should be filled' });
+    }
+
     const { help_id } = req.params;
     const { answer } = req.body;
 
-    if (answer === null || answer === '') {
-      return res
-        .status(400)
-        .json({ error: 'The answer input should be filled' });
-    }
+    const helpOrder = await HelpOrders.findByPk(help_id);
 
-    const helpOrders = await HelpOrders.findByPk(help_id);
-    const studentOrder = await Student.findByPk(helpOrders.student_id);
-
-    helpOrders.update({
+    await helpOrder.update({
       answer,
       answer_at: new Date(),
     });
 
+    const student = await Student.findByPk(helpOrder.student_id);
+
     await Mail.sendMail({
-      to: `${studentOrder.name} <${studentOrder.email}>`,
-      subject: 'Sua solicitação foi respondida',
+      to: `${student.name} <${student.email}>`,
+      subject: 'Sua solicitação foi respondida!',
       template: 'answer',
       context: {
-        student: studentOrder.name,
+        student: student.name,
         answer,
       },
     });
 
-    return res.json(studentOrder);
+    return res.json(helpOrder);
   }
 }
 

@@ -1,11 +1,16 @@
 import { Router } from 'express';
 
 import SessionController from './app/controllers/SessionController';
+
 import StudentController from './app/controllers/StudentController';
-import getOneStudent from './app/controllers/getOneStudent';
+
 import PlanController from './app/controllers/PlanController';
+import GetOnePlan from './app/controllers/GetOnePlan';
+
 import RegistrationController from './app/controllers/RegistrationController';
+
 import CheckinController from './app/controllers/CheckinController';
+
 import HelpOrdersController from './app/controllers/HelpOrdersController';
 import AnswerOrdersController from './app/controllers/AnswerOrdersController';
 
@@ -29,16 +34,16 @@ routes.use(authMiddleware);
 
 // Students Routes
 routes.get('/students', StudentController.index);
-routes.get('/student/:student_id', getOneStudent.index);
 routes.post('/students', StudentController.store);
 routes.put('/student/:student_id', StudentController.update);
 routes.delete('/student/:student_id', StudentController.delete);
 
 // Plans Routes
 routes.get('/plans', PlanController.index);
+routes.get('/plan/:plan_id', GetOnePlan.index);
 routes.post('/plans', PlanController.store);
 routes.put('/plans/:plan_id', PlanController.update);
-routes.delete('/plans/:plan_id', PlanController.delete);
+routes.delete('/plan/:plan_id', PlanController.delete);
 
 // Registration Routes
 routes.get('/registration', RegistrationController.index);
@@ -48,6 +53,6 @@ routes.delete('/registration/:registration_id', RegistrationController.delete);
 
 // Answer Orders Routes
 routes.get('/help-orders', AnswerOrdersController.index);
-routes.post('/help-orders/:help_id/answer', AnswerOrdersController.store);
+routes.post('/help-orders/:help_id', AnswerOrdersController.store);
 
 export default routes;

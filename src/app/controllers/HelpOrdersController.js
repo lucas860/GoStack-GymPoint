@@ -1,3 +1,5 @@
+import * as Yup from 'yup';
+
 import HelpOrders from '../models/HelpOrders';
 
 class HelpOrdersController {
@@ -12,13 +14,17 @@ class HelpOrdersController {
   }
 
   async store(req, res) {
-    const { question } = req.body;
+    const schema = Yup.object().shape({
+      question: Yup.string().required(),
+    });
 
-    if (question === null || question === '') {
+    if (!(await schema.isValid(req.body))) {
       return res
         .status(400)
         .json({ error: 'The question input should be filled' });
     }
+
+    const { question } = req.body;
 
     const helpQuestion = await HelpOrders.create({
       student_id: req.params.student_id,

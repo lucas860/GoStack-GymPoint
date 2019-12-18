@@ -17,11 +17,9 @@ class PlanController {
       title: Yup.string().required(),
       duration: Yup.number()
         .integer()
-        .strict()
         .required(),
       price: Yup.number()
         .integer()
-        .strict()
         .required(),
     });
 
@@ -45,12 +43,8 @@ class PlanController {
   async update(req, res) {
     const schema = Yup.object().shape({
       title: Yup.string(),
-      duration: Yup.number()
-        .integer()
-        .strict(),
-      price: Yup.number()
-        .integer()
-        .strict(),
+      duration: Yup.number().integer(),
+      price: Yup.number().integer(),
     });
 
     if (!(await schema.isValid(req.body))) {
@@ -66,13 +60,13 @@ class PlanController {
       return res.status(400).json({ error: 'Plan not found' });
     }
 
-    const newPlan = await plan.update({
+    await plan.update({
       title,
       duration,
       price,
     });
 
-    return res.json(newPlan);
+    return res.json(plan);
   }
 
   async delete(req, res) {

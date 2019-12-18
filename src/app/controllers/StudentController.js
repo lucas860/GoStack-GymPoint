@@ -15,7 +15,9 @@ class StudentController {
             },
           },
         })
-      : await Student.findAll();
+      : await Student.findAll({
+          order: [['name', 'ASC']],
+        });
 
     return res.json(students);
   }
@@ -51,7 +53,7 @@ class StudentController {
   async update(req, res) {
     const schema = Yup.object().shape({
       name: Yup.string(),
-      email: Yup.string(),
+      email: Yup.string().email(),
       idade: Yup.number(),
       peso: Yup.number(),
       altura: Yup.number(),
@@ -66,9 +68,9 @@ class StudentController {
 
     const student = await Student.findByPk(student_id);
 
+    console.log(req.body);
     if (email !== student.email) {
       const existEmail = await Student.findOne({ where: { email } });
-
       if (existEmail) {
         return res.status(400).json({
           error:
