@@ -9,15 +9,15 @@ class StudentController {
 
     const students = search
       ? await Student.findAll({
-          where: {
-            name: {
-              [Op.like]: `${search}%`,
-            },
+        where: {
+          name: {
+            [Op.like]: `${search}%`,
           },
-        })
+        },
+      })
       : await Student.findAll({
-          order: [['name', 'ASC']],
-        });
+        order: [['name', 'ASC']],
+      });
 
     return res.json(students);
   }
@@ -42,7 +42,9 @@ class StudentController {
     const findStudent = await Student.findOne({ where: { email } });
 
     if (findStudent) {
-      return res.status(400).json({ error: 'Student already exists' });
+      return res.status(400).json({
+        error: 'Another student is registered with this email address already',
+      });
     }
 
     const newStudent = await Student.create(req.body);
@@ -68,13 +70,12 @@ class StudentController {
 
     const student = await Student.findByPk(student_id);
 
-    console.log(req.body);
     if (email !== student.email) {
       const existEmail = await Student.findOne({ where: { email } });
       if (existEmail) {
         return res.status(400).json({
           error:
-            'Another student is already registered with this email address',
+            'Another student is registered with this email address already',
         });
       }
     }

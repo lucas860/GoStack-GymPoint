@@ -3,7 +3,8 @@ import * as Yup from 'yup';
 import HelpOrders from '../models/HelpOrders';
 import Student from '../models/Student';
 
-import Mail from '../../lib/mail';
+import AnswerMail from '../jobs/AnswerMail';
+import Queue from '../../lib/Queue';
 
 class AnswerOrdersController {
   async index(req, res) {
@@ -47,14 +48,9 @@ class AnswerOrdersController {
 
     const student = await Student.findByPk(helpOrder.student_id);
 
-    await Mail.sendMail({
-      to: `${student.name} <${student.email}>`,
-      subject: 'Sua solicitação foi respondida!',
-      template: 'answer',
-      context: {
-        student: student.name,
-        answer,
-      },
+    await Queue.add(AnswerMail.key, {
+      student,
+      answer,
     });
 
     return res.json(helpOrder);

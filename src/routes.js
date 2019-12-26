@@ -8,6 +8,7 @@ import PlanController from './app/controllers/PlanController';
 import GetOnePlan from './app/controllers/GetOnePlan';
 
 import RegistrationController from './app/controllers/RegistrationController';
+import GetOneRegistration from './app/controllers/GetOneRegistration';
 
 import CheckinController from './app/controllers/CheckinController';
 
@@ -28,6 +29,8 @@ routes.post('/students/:student_id/checkins', CheckinController.store);
 // Help Orders Routes
 routes.get('/students/:student_id/help-orders', HelpOrdersController.index);
 routes.post('/students/:student_id/help-orders', HelpOrdersController.store);
+
+routes.get('/registration/:registration_id', GetOneRegistration.index);
 
 // Auth Middleware
 routes.use(authMiddleware);

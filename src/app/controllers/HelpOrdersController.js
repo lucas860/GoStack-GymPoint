@@ -24,11 +24,9 @@ class HelpOrdersController {
         .json({ error: 'The question input should be filled' });
     }
 
-    const { question } = req.body;
-
     const helpQuestion = await HelpOrders.create({
       student_id: req.params.student_id,
-      question,
+      question: req.body.question,
     });
 
     return res.json(helpQuestion);

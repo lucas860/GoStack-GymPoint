@@ -74,13 +74,11 @@ class PlanController {
 
     const plan = await Plan.findByPk(plan_id);
 
-    if (!plan) {
-      return res.status(400).json({ error: 'Plan not found' });
-    }
-
     await plan.destroy();
 
-    return res.json({ message: 'The plan was succesfully deleted' });
+    return res.json({
+      message: `The plan ${plan.title} was succesfully deleted!`,
+    });
   }
 }
 

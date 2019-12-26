@@ -6,7 +6,10 @@ import Student from '../models/Student';
 import Plan from '../models/Plan';
 import Registration from '../models/Registration';
 
-import Mail from '../../lib/mail';
+import RegistrationMail from '../jobs/RegistrationMail';
+import Queue from '../../lib/Queue';
+
+import Mail from '../../lib/Mail';
 
 class RegistrationController {
   async index(req, res) {
@@ -54,6 +57,18 @@ class RegistrationController {
       return res.status(400).json({ error: "The selected plan doesn't exist" });
     }
 
+    const findRegistration = await Registration.findOne({
+      where: {
+        student_id: student,
+      },
+    });
+
+    if (findRegistration) {
+      return res
+        .status(400)
+        .json({ error: 'This student already has a registration' });
+    }
+
     const { title, price, duration } = getPlan;
 
     const totalPrice = price * duration;
@@ -72,23 +87,12 @@ class RegistrationController {
       price: totalPrice,
     });
 
-    await Mail.sendMail({
-      to: `${findStudent.name} <${findStudent.email}>`,
-      subject: 'Matrícula Gympoint',
-      template: 'registration',
-      context: {
-        registration: registration.id,
-        student: findStudent.name,
-        plan: title,
-        value: price,
-        totalValue: totalPrice,
-        startDate: format(registration.start_date, "dd 'de' MMMM 'de' yyyy", {
-          locale: pt,
-        }),
-        endDate: format(registration.end_date, "dd 'de' MMMM 'de' yyyy", {
-          locale: pt,
-        }),
-      },
+    await Queue.add(RegistrationMail.key, {
+      title,
+      price,
+      totalPrice,
+      findStudent,
+      registration,
     });
 
     return res.json(registration);
@@ -123,19 +127,17 @@ class RegistrationController {
   }
 
   async delete(req, res) {
-    const findReg = await Registration.findByPk(req.params.registration_id);
+    const { registration_id } = req.params;
 
-    if (!findReg) {
-      return res.status(404).json({ error: 'Invalid registration ID' });
-    }
-
-    Registration.destroy({
+    await Registration.destroy({
       where: {
-        id: req.params.registration_id,
+        id: registration_id,
       },
     });
 
-    return res.json(findReg);
+    return res.json({
+      message: `The registration ${registration_id} was successfully deleted!`,
+    });
   }
 }
 
