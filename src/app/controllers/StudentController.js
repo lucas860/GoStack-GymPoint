@@ -11,7 +11,7 @@ class StudentController {
       ? await Student.findAll({
         where: {
           name: {
-            [Op.like]: `${search}%`,
+            [Op.like]: `%${search}%`,
           },
         },
       })

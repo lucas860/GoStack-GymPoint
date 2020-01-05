@@ -1,5 +1,4 @@
-import { parseISO, addMonths, isBefore, endOfDay, format } from 'date-fns';
-import pt from 'date-fns/locale/pt';
+import { parseISO, addMonths, isBefore, endOfDay } from 'date-fns';
 import * as Yup from 'yup';
 
 import Student from '../models/Student';
@@ -8,8 +7,6 @@ import Registration from '../models/Registration';
 
 import RegistrationMail from '../jobs/RegistrationMail';
 import Queue from '../../lib/Queue';
-
-import Mail from '../../lib/Mail';
 
 class RegistrationController {
   async index(req, res) {
@@ -73,7 +70,7 @@ class RegistrationController {
 
     const totalPrice = price * duration;
 
-    if (isBefore(parseISO(date), new Date())) {
+    if (isBefore(parseISO(date), new Date('0000-00-00'))) {
       return res.status(400).json({ error: 'Past dates are not permitted' });
     }
 
